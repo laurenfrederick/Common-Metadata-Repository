@@ -1,5 +1,5 @@
 (ns cmr.ingest.config
-  "Contains functions to retrieve metadata db specific configuration"
+  "testing - Contains functions to retrieve metadata db specific configuration"
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.oracle.config :as oracle-config]
             [cmr.oracle.connection :as conn]
