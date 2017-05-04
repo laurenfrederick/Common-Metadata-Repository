@@ -52,8 +52,9 @@
                    :request-json-body json-body}]
                  (:tasks response))))
         "JSON" :json
-        "XML" :xml)
+        "XML" :xml))))
 
+(comment
      (testing "Provider task status response"
        (are3 [accept-format]
          (let [response (ingest/bulk-update-task-status "PROV1" 1
@@ -73,4 +74,4 @@
                                           :concept-id "C1200000003-PROV1"}]}
                   response)))
          "JSON" :json
-         "XML" :xml)))))
+         "XML" :xml)))
