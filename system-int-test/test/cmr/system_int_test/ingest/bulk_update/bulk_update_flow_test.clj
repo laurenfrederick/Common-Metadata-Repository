@@ -31,7 +31,9 @@
                            {:accept-format accept-format :raw? true}))]
           (is (= task-id (:task-id response))))
         "JSON" :json 1
-        "XML" :xml 2))
+        "XML" :xml 2))))
+
+(comment
 
     (testing "Provider status response"
       ;; Create another bulk update event with PROV2 to make sure we're just
@@ -52,9 +54,8 @@
                    :request-json-body json-body}]
                  (:tasks response))))
         "JSON" :json
-        "XML" :xml))))
+        "XML" :xml)
 
-(comment
      (testing "Provider task status response"
        (are3 [accept-format]
          (let [response (ingest/bulk-update-task-status "PROV1" 1
@@ -74,4 +75,4 @@
                                           :concept-id "C1200000003-PROV1"}]}
                   response)))
          "JSON" :json
-         "XML" :xml)))
+         "XML" :xml))))
