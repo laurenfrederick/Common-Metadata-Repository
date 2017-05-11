@@ -93,22 +93,27 @@
                            :PeriodCycleDurationUnit
                            :PeriodCycleDurationValue)])))]))
 
+(defn generate-science-keyword
+  "Generate science keyword xml"
+  [sk]
+  [:ScienceKeyword
+   [:CategoryKeyword (:Category sk)]
+   [:TopicKeyword (:Topic sk)]
+   [:TermKeyword (:Term sk)]
+   [:VariableLevel1Keyword
+    [:Value (:VariableLevel1 sk)]
+    [:VariableLevel2Keyword
+     [:Value (:VariableLevel2 sk)]
+     [:VariableLevel3Keyword (:VariableLevel3 sk)]]]
+   [:DetailedVariableKeyword (:DetailedVariable sk)]])
+
 (defn echo10-sciencekeywords
   "Generates ECHO 10 XML structure for science-keywords"
   [c]
   (when-let [science-keywords (:ScienceKeywords c)]
     [:ScienceKeywords
      (for [sk science-keywords]
-       [:ScienceKeyword
-        [:CategoryKeyword (:Category sk)]
-        [:TopicKeyword (:Topic sk)]
-        [:TermKeyword (:Term sk)]
-        [:VariableLevel1Keyword
-         [:Value (:VariableLevel1 sk)]
-         [:VariableLevel2Keyword
-          [:Value (:VariableLevel2 sk)]
-          [:VariableLevel3Keyword (:VariableLevel3 sk)]]]
-        [:DetailedVariableKeyword (:DetailedVariable sk)]])]))
+       (generate-science-keyword sk))]))
 
 (defn metadata-associations
   "Generates ECHO 10 XML structure for metadata associations"

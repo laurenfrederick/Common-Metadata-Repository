@@ -6,7 +6,12 @@
    [cmr.common.validations.json-schema :as js]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
-   [cmr.transmit.metadata-db2 :as mdb2]))
+   [cmr.transmit.metadata-db2 :as mdb2]
+
+   [cmr.common.xml :as cx]
+   [clojure.data.xml :as xml2]
+   [cmr.common.xml.simple-xpath :as xpath]))
+
 
 (def bulk-update-schema
   (js/json-string->json-schema (slurp (io/resource "bulk_update_schema.json"))))
@@ -71,3 +76,94 @@
         (if concept-id-message
           (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" concept-id-message)
           (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" message))))))
+
+
+(comment
+ (def doc
+  (xml2/parse (java.io.StringReader. (slurp (io/resource "example_data/echo10/C179001707-SEDAC.xml")))))
+
+ ;; correct
+ (def keywords (cx/elements-at-path doc [:ScienceKeywords :ScienceKeyword]))
+ (first keywords)
+
+ (cx/element-at-path (first keywords) [:CategoryKeyword])
+
+ (filter #(= "EARTH SCIENCE" (cx/string-at-path % [:CategoryKeyword])) keywords)
+
+ (defn- update-element
+  [element val]
+  (assoc element :content val))
+
+ (cx/update-elements-at-path (first keywords) [:ScienceKeywords :ScienceKeyword] update-element)
+
+ (defn- element-updates
+  [element conditions updates]
+  (if (every? true?
+       (mapv (fn [condition]
+              (= (first (vals condition)) (cx/string-at-path element [(first (keys condition))])))
+            conditions))
+   (let [atom-element (atom element)]
+    (doseq [key (keys updates)
+            :let [val (get updates key)]]
+     (reset! atom-element (cx/update-elements-at-path @atom-element [key] update-element val)))
+    @atom-element)
+   element))
+
+ (def condition (first conditions))
+
+ (element-updates (first keywords) [{:CategoryKeyword "EARTH SCIENCE"}
+                                    {:TopicKeyword "AGRICULTURE"}]
+   {:CategoryKeyword "LAUREN"
+    :TopicKeyword "Functions"})
+
+
+ (def update-sk
+   #clojure.data.xml.Element
+    {:tag :ScienceKeyword,
+     :attrs {}
+     :content
+       [#clojure.data.xml.Element
+         {:tag :CategoryKeyword
+          :attrs {}
+          :content ["TEST CAT"]}]})
+
+ ;; ADD TO EXISTING
+ (defn update-kws
+  [keywords val]
+  (update keywords :content #(conj % val)))
+
+ (def sk-element
+  (cx/element-at-path doc [:ScienceKeywords]))
+
+ (def doc2
+  (cx/update-elements-at-path doc [:ScienceKeywords] update-kws update-sk))
+
+ ;; CLEAR ALL AND replace
+ (defn clear-and-replace
+   [keywords val]
+   (assoc keywords :content val))
+
+ (def doc2
+  (cx/update-elements-at-path doc [:ScienceKeywords] clear-and-replace update-sk))
+
+ ;; FIND AND replace/clear
+ (defn find-and-replace
+   [keywords val conditions])
+   ;; convert to umm and check for matches
+   ;; if matches, set to val
+
+ (cx/element-at-path doc2 [:ScienceKeywords])
+
+ {:science-keywords
+  {:umm->xml-function ""
+   :xml->umm-function ""}}
+
+
+ (def sk-find {:Category "CAT5"})
+
+ (def sk {:Category "CAT5"
+          :Topic "t1"
+          :Term  "term1"})
+
+ (let [ks (select-keys sk (keys sk-find))]
+   (= ks sk-find)))

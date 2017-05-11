@@ -206,6 +206,18 @@
   "Set of Dataset_Progress values supported in DIF10"
   (set (distinct (vals collection-progress->dif10-dataset-progress))))
 
+(defn generate-science-keyword
+  "Generate science keyword xml"
+  [sk]
+  [:Science_Keywords
+   [:Category (:Category sk)]
+   [:Topic (:Topic sk)]
+   [:Term (:Term sk)]
+   [:Variable_Level_1 (:VariableLevel1 sk)]
+   [:Variable_Level_2 (:VariableLevel2 sk)]
+   [:Variable_Level_3 (:VariableLevel3 sk)]
+   [:Detailed_Variable (:DetailedVariable sk)]])
+
 (defn- generate-dataset-progress
   "Return Dataset_Progress attribute by translating from the UMM CollectionProgress to one of the
   DIF10 enumerations. Defaults to generating a Dataset_Progress of IN WORK if translation cannot be
@@ -244,14 +256,7 @@
     (if-let [sks (:ScienceKeywords c)]
       ;; From UMM keywords
       (for [sk sks]
-        [:Science_Keywords
-         [:Category (:Category sk)]
-         [:Topic (:Topic sk)]
-         [:Term (:Term sk)]
-         [:Variable_Level_1 (:VariableLevel1 sk)]
-         [:Variable_Level_2 (:VariableLevel2 sk)]
-         [:Variable_Level_3 (:VariableLevel3 sk)]
-         [:Detailed_Variable (:DetailedVariable sk)]])
+        (generate-science-keyword sk))
       ;; Default element
       [:Science_Keywords
        [:Category u/not-provided]

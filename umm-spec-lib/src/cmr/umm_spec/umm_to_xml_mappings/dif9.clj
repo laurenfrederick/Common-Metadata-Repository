@@ -36,6 +36,18 @@
   [platforms]
   (generate-short-name-long-name-elements :Source_Name platforms))
 
+(defn generate-science-keyword
+  "Generate science keyword xml"
+  [sk]
+  [:Parameters
+   [:Category (:Category sk)]
+   [:Topic (:Topic sk)]
+   [:Term (:Term sk)]
+   [:Variable_Level_1 (:VariableLevel1 sk)]
+   [:Variable_Level_2 (:VariableLevel2 sk)]
+   [:Variable_Level_3 (:VariableLevel3 sk)]
+   [:Detailed_Variable (:DetailedVariable sk)]])
+
 (defn umm-c-to-dif9-xml
   "Returns DIF9 XML structure from UMM collection record c."
   [c]
@@ -53,14 +65,7 @@
     (contact/generate-personnel c)
     (if-let [sks (:ScienceKeywords c)]
       (for [sk sks]
-        [:Parameters
-         [:Category (:Category sk)]
-         [:Topic (:Topic sk)]
-         [:Term (:Term sk)]
-         [:Variable_Level_1 (:VariableLevel1 sk)]
-         [:Variable_Level_2 (:VariableLevel2 sk)]
-         [:Variable_Level_3 (:VariableLevel3 sk)]
-         [:Detailed_Variable (:DetailedVariable sk)]])
+        (generate-science-keyword sk))
       ;; Default element
       [:Parameters
        [:Category u/not-provided]

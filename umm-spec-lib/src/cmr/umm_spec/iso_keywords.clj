@@ -180,6 +180,10 @@
          (map #(or % nil-location-keyword-field))
          (str/join iso/keyword-separator-join))))
 
+(defn generate-keyword
+  [keyword]
+  [:gmd:keyword [:gco:CharacterString keyword]])
+
 (defn- generate-descriptive-keywords
   "Returns the content generator instructions for the given descriptive keywords."
   [keyword-type keywords code-lists]
@@ -187,7 +191,7 @@
     [:gmd:descriptiveKeywords
      [:gmd:MD_Keywords
       (for [keyword keywords]
-        [:gmd:keyword [:gco:CharacterString keyword]])
+        (generate-keyword keyword))
       (when keyword-type
         [:gmd:type
          [:gmd:MD_KeywordTypeCode

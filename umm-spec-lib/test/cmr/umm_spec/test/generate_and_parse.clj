@@ -26,7 +26,8 @@
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
-  [:dif :dif10 :echo10 :iso19115 :iso-smap])
+  ;[:dif :dif10 :echo10 :iso19115 :iso-smap])
+  [:dif])
 
 (def test-context (lkt/setup-context-for-test))
 
@@ -62,7 +63,7 @@
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."
   ([concept-type metadata-format record]
-   (xml-round-trip concept-type metadata-format record false))
+   (xml-round-trip concept-type metadata-format record true))
   ([concept-type metadata-format record print-xml?]
    (let [metadata-xml (core/generate-metadata test-context record metadata-format)]
      (when print-xml? (println metadata-xml))
@@ -87,7 +88,7 @@
         check-failure (fn [result]
                         (when-not result (reset! failed-atom true)))]
     (doseq [metadata-format tested-collection-formats
-            example-file (example-files metadata-format)
+            example-file [(first (example-files metadata-format))]
             :when (not @failed-atom)
             :let [metadata (slurp example-file)
                   umm (js/parse-umm-c
@@ -97,6 +98,14 @@
                                        :Type "CREATE"}
                                       {:Date (t/date-time 2013)
                                        :Type "UPDATE"}]))]]
+                 ;rt-metadata (core/generate-metadata test-context umm metadata-format)]
+
+      (def test-context test-context)
+      (def metadata-format metadata-format)
+      (proto-repl.saved-values/save 8 example-file umm)
+
+      (comment
+        (core/generate-metadata test-context umm metadata-format))
 
       ;; input file is valid
       (check-failure
