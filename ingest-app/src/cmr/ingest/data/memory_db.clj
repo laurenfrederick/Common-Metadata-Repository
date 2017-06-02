@@ -36,7 +36,7 @@
   (get-bulk-update-task-status
     [this task-id]
     (let [task-status (some->> @task-status-atom
-                               (some #(when (= task-id (str (:task-id %)))
+                               (some #(when (= (str task-id) (str (:task-id %)))
                                             %)))]
       (select-keys task-status [:task-id :status :status-message :request-json-body])))
 
@@ -44,7 +44,7 @@
     [this task-id]
     (some->> @collection-status-atom
              (into [])
-             (filter #(= task-id (str (:task-id %))))
+             (filter #(= (str task-id) (str (:task-id %))))
              (map #(select-keys % [:concept-id :status :status-message]))))
 
   (get-bulk-update-collection-status

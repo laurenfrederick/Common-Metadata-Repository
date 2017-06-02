@@ -12,7 +12,8 @@
    [cmr.ingest.services.ingest-service :as ingest-service]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [cmr.umm-spec.field-update :as field-update]))
+   [cmr.umm-spec.field-update :as field-update]
+   [cmr.common.log :as log :refer (debug info warn error)]))
 
 (def bulk-update-schema
   (js/json-string->json-schema (slurp (io/resource "bulk_update_schema.json"))))
@@ -58,11 +59,14 @@
   from the db save."
   [context provider-id json]
   (validate-bulk-update-post-params json)
+  (info "BULK-UPDATE: Creating bulk update task")
   (let [bulk-update-params (json/parse-string json true)
         {:keys [concept-ids]} bulk-update-params
         ;; Write db rows - one for overall status, one for each concept id
         task-id (data-bulk-update/create-bulk-update-task context
                  provider-id json concept-ids)]
+    (info (str "BULK-UPDATE: Bulk update task " task-id " created successfully for " (count concept-ids)
+               " concept ids"))
     ;; Queue the bulk update event
     (ingest-events/publish-ingest-event
       context
@@ -124,6 +128,8 @@
   [context provider-id task-id]
   (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider context task-id)]
     (when (= complete-status (:status task-status))
+      (info (str "BULK-UPDATE: Task " task-id " completed.")))
+    (when (= complete-status (:status task-status))
       (ingest-events/publish-ingest-event
        context
        (ingest-events/provider-collections-require-reindexing-event
@@ -159,3 +165,9 @@
           (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id failed-status concept-id-message)
           (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id failed-status message)))))
   (process-bulk-update-complete context provider-id task-id))
+
+
+(comment
+  (let [text (slurp (io/resource "bulk_update_concept_ids.txt"))
+        lines (string/split-lines text)]
+    (string/join "," (map #(str \" % \") lines))))
